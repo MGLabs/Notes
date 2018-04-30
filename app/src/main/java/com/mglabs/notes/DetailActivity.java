@@ -1,11 +1,14 @@
 package com.mglabs.notes;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
+
+import java.util.HashSet;
 
 /**
  * Classe per il dettaglio della nota e per l'aggiunta di una nota.
@@ -20,7 +23,7 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-        editText = (EditText) findViewById(R.id.editText);
+        editText = findViewById(R.id.editText);
 
         Intent intent = getIntent();
         noteId = intent.getIntExtra("noteId", -1);
@@ -41,9 +44,14 @@ public class DetailActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                MainActivity.notes.set(noteId, String.valueOf(s));   //save the new note
+                MainActivity.notes.set(noteId, String.valueOf(s));   //save the edited note
                 MainActivity.adapter.notifyDataSetChanged();
 
+                SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("com.mglabs.notes", MODE_PRIVATE);
+
+                HashSet<String> set = new HashSet(MainActivity.notes);
+
+                sharedPreferences.edit().putStringSet("notes", set).apply();
             }
 
             @Override

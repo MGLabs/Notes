@@ -1,6 +1,9 @@
 package com.mglabs.notes;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -12,11 +15,13 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class MainActivity extends AppCompatActivity {
 
     static ArrayList<String> notes = new ArrayList<>();
     static ArrayAdapter adapter;
+    SharedPreferences sharedPreferences;
 
 
     @Override
@@ -26,7 +31,18 @@ public class MainActivity extends AppCompatActivity {
 
         ListView listView = findViewById(R.id.listView);
 
-        notes.add("Example Note");
+        sharedPreferences = getApplicationContext().getSharedPreferences("com.mglabs.notes", MODE_PRIVATE);
+        HashSet<String> set = (HashSet<String>) sharedPreferences.getStringSet("notes", null);
+
+        if (set == null) {
+
+            notes.add("Example Note");
+
+        } else {
+
+            notes = new ArrayList(set);
+        }
+
 
         adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, notes);
         listView.setAdapter(adapter);
@@ -41,8 +57,35 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //remove note
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
 
+                new AlertDialog.Builder(MainActivity.this)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setTitle("Are you sure?")
+                        .setMessage("Do you want to delete this note?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
 
+                                notes.remove(position);
+                                adapter.notifyDataSetChanged();
+
+                                sharedPreferences = getApplicationContext().getSharedPreferences("com.mglabs.notes", MODE_PRIVATE);
+
+                                HashSet<String> set = new HashSet(MainActivity.notes);
+
+                                sharedPreferences.edit().putStringSet("notes", set).apply();
+                            }
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+
+                return true;
+            }
+        });
 
     }
 
@@ -57,13 +100,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if(item.getItemId() == R.id.add_note) {
+        if (item.getItemId() == R.id.add_note) {
             Intent intent = new Intent(this, DetailActivity.class);
             startActivity(intent);
 
-            return  true;
+            return true;
         }
-        return  false;
+        return false;
         //return super.onOptionsItemSelected(item);
     }
 }
