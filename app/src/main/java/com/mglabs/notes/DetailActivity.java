@@ -7,9 +7,13 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
 
+/**
+ * Classe per il dettaglio della nota e per l'aggiunta di una nota.
+ */
 public class DetailActivity extends AppCompatActivity {
 
     EditText editText;
+    int noteId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,10 +23,14 @@ public class DetailActivity extends AppCompatActivity {
         editText = (EditText) findViewById(R.id.editText);
 
         Intent intent = getIntent();
-        final int noteId = intent.getIntExtra("noteId", -1);
+        noteId = intent.getIntExtra("noteId", -1);
 
         if (noteId != -1) {
-            editText.setText(MainActivity.notes.get(noteId));
+            editText.setText(MainActivity.notes.get(noteId));   //setta il testo della nota se l'id esiste
+        } else {
+            MainActivity.notes.add("");
+            noteId = MainActivity.notes.size() - 1;    //altrimenti crea una nuova nota
+            MainActivity.adapter.notifyDataSetChanged();
         }
 
         editText.addTextChangedListener(new TextWatcher() {
